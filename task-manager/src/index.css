@@ -1,0 +1,10 @@
+@import "tailwindcss";
+
+@theme {
+  /* This section fixes the "unknown utility class" error by loading the theme */
+}
+
+/* Now you can use @apply because the theme is loaded */
+body {
+  @apply bg-gray-100;
+}
