@@ -1,0 +1,20 @@
+use serde::{Deserialize, Serialize};
+use sqlx::FromRow;
+
+// We added 'pub' to the struct and its fields so handlers.rs can use them
+#[derive(Serialize, Deserialize, FromRow)]
+#[serde(rename_all = "camelCase")]
+pub struct Task {
+    pub id: i64,
+    pub title: String,
+    pub is_completed: bool,
+    pub priority: String,
+    pub created_at: i64,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CreateTask {
+    pub title: String,
+    pub priority: String,
+}
