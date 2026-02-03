@@ -5,21 +5,19 @@ import type { Task } from "./types";
 function App() {
   // State: Holds the list of tasks and form inputs
 
-  // Initialize State from Local Storage (Read FIRST, default to empty array if nothing found)
-  const [tasks, setTasks] = useState<Task[]>(() => {
-    const saved = localStorage.getItem("my-tasks");
-    if (saved) {
-      return JSON.parse(saved); // Convert String -> Array
-    }
-    return []; // Default to empty if first time
-  });
+  const [tasks, setTasks] = useState<Task[]>([]);
 
   const [text, setText] = useState<string>("");
 
+  const [priority, setPriority] = useState("medium");
+
   // Save to Local Storage whenever 'tasks' changes
   useEffect(() => {
-    localStorage.setItem("my-tasks", JSON.stringify(tasks));
-  }, [tasks]);
+    fetch("http://localhost:3000/tasks")
+      .then((res) => res.json())
+      .then((data) => setTasks(data))
+      .catch((err) => console.error("Error fetching tasks:", err));
+  }, []);
 
   // "This is an array of objects" (<Task[]>): This is used for early development
   // const [tasks, setTasks] = useState<Task[]>([
@@ -40,43 +38,60 @@ function App() {
   // ]);
 
   // --- NEW: Function to delete a task ---
-  // We use .filter() to create a NEW array without deleted item
-  const deleteTask = (idToDelete: number) => {
-    // "Keep every task where the ID is not the one we want to delete"
-    const updatedTasks = tasks.filter((task) => task.id !== idToDelete);
-    setTasks(updatedTasks); // Update the state
+  // we tell the server "Delete ID #5", wait for confirmation, then update the screen.
+  const deleteTask = (id: number) => {
+    fetch(`http://localhost:3000/tasks/${id}`, {
+      method: "DELETE",
+    })
+      .then(() => {
+        // Only remove from screen if server delete was successful
+        setTasks(tasks.filter((t) => t.id !== id));
+      })
+      .catch((error) => console.error("Error deleting task:", error));
   };
 
   // Function to add Task
   const addTask = () => {
-    if (!text) return; // Don't add empty tasks
+    if (text.trim() === "") return;
 
-    const newTask: Task = {
-      id: Date.now(),
-      title: text,
-      isCompleted: false,
-      priority: "medium", // Default to medium for now
-      createdAt: Date.now(),
-    };
+    const newTask = { title: text, priority: priority }; // We will fix priority later
 
-    // add to list using Spread operator
-    setTasks([...tasks, newTask]);
-
-    // Clearing the input
-    setText("");
+    fetch("http://localhost:3000/tasks", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newTask),
+    })
+      .then((res) => res.json())
+      .then((savedTask) => {
+        // Add the task (that came back from the server) to the UI
+        setTasks([...tasks, savedTask]);
+        setText("");
+        setPriority("medium"); // Reset dropdown to default
+      })
+      .catch((err) => console.error("Error adding task:", err));
   };
 
-  // Toggle Completion
+  // Toggle Completion - We tell the server "Flip ID #5", then update the screen.
   const toggleTask = (id: number) => {
-    setTasks(
-      tasks.map((task) => {
-        if (task.id === id) {
-          // Create a Copy with the boolean flipped
-          return { ...task, isCompleted: !task.isCompleted };
-        }
-        return task; // return other tasks unchanged
-      }),
-    );
+    fetch(`http://localhost:3000/tasks/${id}`, {
+      method: "PATCH", // Matches our Rust .patch() route
+    })
+      .then(() => {
+        // Update local state to match server
+        setTasks(
+          tasks.map((task) =>
+            task.id === id ? { ...task, isCompleted: !task.isCompleted } : task,
+          ),
+        );
+      })
+      .catch((error) => console.error("Error toggling task:", error));
+  };
+
+  // Helper to choose color based on priority
+  const getBorderColor = (p: string) => {
+    if (p === "high") return "border-red-500";
+    if (p === "medium") return "border-yellow-500";
+    return "border-green-500"; // Low
   };
 
   return (
@@ -84,19 +99,36 @@ function App() {
       <h1 className="text-3xl font-bold text-blue-600 mb-8">🚀 Task Manager</h1>
 
       {/* --- NEW: The Input Form --- */}
-      <div className="bg-white p-6 rounded-lg shadow mb-8 w-full max-w-lg">
+      <div
+        className={`bg-white p-4 rounded-lg shadow border-l-4 ${getBorderColor(priority)} w-full max-w-lg flex flex-col sm:flex-row justify-between sm:items-center gap-4 cursor-pointer hover:bg-gray-50 transition`}
+      >
+        {/* Container for Input + Dropdown + Button */}
         <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+          {/* 1. The Text Box */}
           <input
             type="text"
             placeholder="What needs to be done?"
             className="w-full border border-gray-300 rounded p-2 focus:outline-none focus:border-blue-500"
             value={text}
             onChange={(e) => setText(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && addTask()} // Allow pressing "Enter"
+            onKeyDown={(e) => e.key === "Enter" && addTask()}
           />
+
+          {/* 2. The Priority Dropdown (NEW) */}
+          <select
+            value={priority}
+            onChange={(e) => setPriority(e.target.value)}
+            className="p-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 bg-white"
+          >
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+          </select>
+
+          {/* 3. The Add Button */}
           <button
             onClick={addTask}
-            className="self-end sm:self-auto bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition font-bold whitespace-nowrap"
+            className="self-end sm:self-auto bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition font-bold whitespace-nowrap"
           >
             Add
           </button>
