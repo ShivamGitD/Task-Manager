@@ -1,4 +1,4 @@
-use crate::model::{CreateTask, Task};
+use crate::model::{CreateTask, Task, UpdateTask};
 use axum::{
     Json,
     extract::{Path, State},
@@ -56,6 +56,22 @@ pub async fn delete_task(State(pool): State<SqlitePool>, Path(id): Path<i64>) ->
 // PATCH /tasks/:id
 pub async fn toggle_task(State(pool): State<SqlitePool>, Path(id): Path<i64>) -> StatusCode {
     sqlx::query("UPDATE tasks SET is_completed = NOT is_completed WHERE id = ?")
+        .bind(id)
+        .execute(&pool)
+        .await
+        .map(|_| StatusCode::OK)
+        .unwrap_or(StatusCode::INTERNAL_SERVER_ERROR)
+}
+
+// PUT /tasks/:id
+pub async fn update_task(
+    State(pool): State<SqlitePool>,
+    Path(id): Path<i64>,
+    Json(payload): Json<UpdateTask>,
+) -> StatusCode {
+    sqlx::query("UPDATE tasks SET title = ?, priority = ? WHERE id = ?")
+        .bind(&payload.title)
+        .bind(&payload.priority)
         .bind(id)
         .execute(&pool)
         .await

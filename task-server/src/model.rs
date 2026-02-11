@@ -18,3 +18,10 @@ pub struct CreateTask {
     pub title: String,
     pub priority: String,
 }
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UpdateTask {
+    pub title: String,
+    pub priority: String,
+}

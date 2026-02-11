@@ -11,6 +11,9 @@ function App() {
 
   const [priority, setPriority] = useState("medium");
 
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editText, setEditText] = useState("");
+  const [editPriority, setEditPriority] = useState("medium");
   // Save to Local Storage whenever 'tasks' changes
   useEffect(() => {
     fetch("http://localhost:3000/tasks")
@@ -94,6 +97,42 @@ function App() {
     return "border-green-500"; // Low
   };
 
+  // Enter Edit Mode
+  const startEditing = (task: Task) => {
+    setEditingId(task.id);
+    setEditText(task.title);
+    setEditPriority(task.priority);
+  };
+
+  // Cancel Edit Mode
+  const cancelEditing = () => {
+    setEditingId(null);
+    setEditText("");
+  };
+
+  // Save Changes (Talk to Backend)
+  const saveEdit = (id: number) => {
+    fetch(`http://localhost:3000/tasks/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title: editText, priority: editPriority }),
+    })
+      .then((res) => {
+        if (res.ok) {
+          // Update the UI locally
+          setTasks(
+            tasks.map((t) =>
+              t.id === id
+                ? { ...t, title: editText, priority: editPriority }
+                : t,
+            ),
+          );
+          cancelEditing(); // Close the input box
+        }
+      })
+      .catch((err) => console.error("Error updating task:", err));
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 p-10">
       <h1 className="text-3xl font-bold text-blue-600 mb-8">🚀 Task Manager</h1>
@@ -140,35 +179,85 @@ function App() {
         {/* 3. The loop: We map over the array */}
         {tasks.map((task) => (
           <div
-            key={task.id} // React needs unique key for loops
-            // Adding cursor pointer to show it's clickable
-            className="bg-white p-4 rounded-lg shadow border-l-4 border-blue-500 w-full max-w-lg flex flex-col sm:flex-row justify-between sm:items-center gap-4 cursor-pointer hover:bg-gray-50 transition"
-            // Adding onClick toggle (only if they don't click the delete button)
-            onClick={() => toggleTask(task.id)}
+            key={task.id}
+            className={`bg-white p-4 rounded-lg shadow border-l-4 ${getBorderColor(task.priority)} w-full max-w-lg flex flex-col sm:flex-row justify-between sm:items-center gap-4 transition`}
           >
-            <div className="w-full sm:w-auto break-words">
-              <h3
-                className={`text-lg font-bold ${task.isCompleted ? "line-through text-gray-400" : "text-gray-800"}`}
-              >
-                {task.title}
-              </h3>
-              <div className="text-xs mt-1 font-bold text-gray-500 uppercase">
-                {task.priority} • {task.isCompleted ? "✅ Done" : "⏳ Pending"}
+            {/* CHECK: Are we editing THIS task? */}
+            {editingId === task.id ? (
+              // --- EDIT MODE ---
+              <div className="flex flex-col sm:flex-row gap-2 w-full">
+                <input
+                  className="border p-1 rounded w-full"
+                  value={editText}
+                  onChange={(e) => setEditText(e.target.value)}
+                />
+                <select
+                  className="border p-1 rounded"
+                  value={editPriority}
+                  onChange={(e) => setEditPriority(e.target.value)}
+                >
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                </select>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => saveEdit(task.id)}
+                    className="bg-green-500 text-white px-3 py-1 rounded text-sm"
+                  >
+                    Save
+                  </button>
+                  <button
+                    onClick={cancelEditing}
+                    className="bg-gray-400 text-white px-3 py-1 rounded text-sm"
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
-            </div>
+            ) : (
+              // --- VIEW MODE (Normal) ---
+              <>
+                <div
+                  className="w-full sm:w-auto break-words cursor-pointer"
+                  onClick={() => toggleTask(task.id)}
+                >
+                  <h3
+                    className={`text-lg font-bold ${task.isCompleted ? "line-through text-gray-400" : "text-gray-800"}`}
+                  >
+                    {task.title}
+                  </h3>
+                  <div className="text-xs mt-1 font-bold text-gray-500 uppercase">
+                    {task.priority} •{" "}
+                    {task.isCompleted ? "✅ Done" : "⏳ Pending"}
+                  </div>
+                </div>
 
-            <button
-              // Stop the "Delete" click from bubbling up to the "Toggle" click
-              onClick={(e) => {
-                e.stopPropagation(); // CRITICAL LINE: ithout this, clicking "Delete" would count as clicking the "Task Card"
-                // it would toggle the task AND delete it at the same time. This line stops the click from "bubbling up."
+                <div className="flex gap-2">
+                  {/* EDIT BUTTON */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      startEditing(task);
+                    }}
+                    className="text-blue-500 hover:bg-blue-100 p-2 rounded"
+                  >
+                    ✏️
+                  </button>
 
-                deleteTask(task.id);
-              }}
-              className="self-end sm:self-auto bg-red-100 text-red-600 px-3 py-1 rounded hover::bg-red-200 transition text-sm font-bold"
-            >
-              Delete 🗑️
-            </button>
+                  {/* DELETE BUTTON */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteTask(task.id);
+                    }}
+                    className="text-red-600 hover:bg-red-100 p-2 rounded"
+                  >
+                    🗑️
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         ))}
       </div>

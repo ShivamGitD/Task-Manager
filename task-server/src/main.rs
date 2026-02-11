@@ -39,7 +39,9 @@ async fn main() {
         )
         .route(
             "/tasks/{id}",
-            delete(handlers::delete_task).patch(handlers::toggle_task),
+            delete(handlers::delete_task)
+                .patch(handlers::toggle_task)
+                .put(handlers::update_task),
         )
         .layer(CorsLayer::permissive())
         .with_state(pool);
