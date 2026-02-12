@@ -1,1 +1,0 @@
-impl std::future::Future<Output = axum::http::StatusCode>: axum::handler::Handler<_, sqlx::Pool<sqlx::Sqlite>>
