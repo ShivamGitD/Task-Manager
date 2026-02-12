@@ -24,6 +24,7 @@ async fn main() {
             title TEXT NOT NULL,
             is_completed BOOLEAN NOT NULL DEFAULT 0,
             priority TEXT NOT NULL,
+            due_date TEXT,
             created_at INTEGER NOT NULL
         )",
     )

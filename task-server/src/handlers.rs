@@ -21,11 +21,12 @@ pub async fn create_task(
     Json(payload): Json<CreateTask>,
 ) -> Result<Json<Task>, StatusCode> {
     let id = sqlx::query(
-        "INSERT INTO tasks (title, priority, is_completed, created_at) VALUES (?, ?, ?, ?)",
+        "INSERT INTO tasks (title, priority, is_completed, due_date, created_at) VALUES (?, ?, ?, ?, ?)",
     )
     .bind(&payload.title)
     .bind(&payload.priority)
     .bind(false)
+    .bind(&payload.due_date)
     .bind(1716300000000i64)
     .execute(&pool)
     .await
@@ -37,6 +38,7 @@ pub async fn create_task(
         title: payload.title,
         priority: payload.priority,
         is_completed: false,
+        due_date: payload.due_date,
         created_at: 1716300000000,
     };
 
@@ -69,9 +71,10 @@ pub async fn update_task(
     Path(id): Path<i64>,
     Json(payload): Json<UpdateTask>,
 ) -> StatusCode {
-    sqlx::query("UPDATE tasks SET title = ?, priority = ? WHERE id = ?")
+    sqlx::query("UPDATE tasks SET title = ?, priority = ?, due_date = ? WHERE id = ?")
         .bind(&payload.title)
         .bind(&payload.priority)
+        .bind(&payload.due_date)
         .bind(id)
         .execute(&pool)
         .await

@@ -10,10 +10,12 @@ function App() {
   const [text, setText] = useState<string>("");
 
   const [priority, setPriority] = useState("medium");
+  const [dueDate, setDueDate] = useState("");
 
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editText, setEditText] = useState("");
   const [editPriority, setEditPriority] = useState("medium");
+  const [editDueDate, setEditDueDate] = useState("");
   // Save to Local Storage whenever 'tasks' changes
   useEffect(() => {
     fetch("http://localhost:3000/tasks")
@@ -57,7 +59,11 @@ function App() {
   const addTask = () => {
     if (text.trim() === "") return;
 
-    const newTask = { title: text, priority: priority }; // We will fix priority later
+    const newTask = {
+      title: text,
+      priority: priority,
+      dueDate: dueDate || null,
+    }; // We will fix priority later
 
     fetch("http://localhost:3000/tasks", {
       method: "POST",
@@ -70,6 +76,7 @@ function App() {
         setTasks([...tasks, savedTask]);
         setText("");
         setPriority("medium"); // Reset dropdown to default
+        setDueDate(""); // Reset Date Picker
       })
       .catch((err) => console.error("Error adding task:", err));
   };
@@ -102,6 +109,7 @@ function App() {
     setEditingId(task.id);
     setEditText(task.title);
     setEditPriority(task.priority);
+    setEditDueDate(task.dueDate || ""); // Load Existing Date
   };
 
   // Cancel Edit Mode
@@ -115,7 +123,11 @@ function App() {
     fetch(`http://localhost:3000/tasks/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title: editText, priority: editPriority }),
+      body: JSON.stringify({
+        title: editText,
+        priority: editPriority,
+        dueDate: editDueDate || null,
+      }),
     })
       .then((res) => {
         if (res.ok) {
@@ -123,7 +135,12 @@ function App() {
           setTasks(
             tasks.map((t) =>
               t.id === id
-                ? { ...t, title: editText, priority: editPriority }
+                ? {
+                    ...t,
+                    title: editText,
+                    priority: editPriority,
+                    dueDate: editDueDate,
+                  }
                 : t,
             ),
           );
@@ -164,6 +181,14 @@ function App() {
             <option value="high">High</option>
           </select>
 
+          {/* Date Picker */}
+          <input
+            type="date"
+            value={dueDate}
+            onChange={(e) => setDueDate(e.target.value)}
+            className="p-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 bg-white"
+          />
+
           {/* 3. The Add Button */}
           <button
             onClick={addTask}
@@ -200,6 +225,12 @@ function App() {
                   <option value="medium">Medium</option>
                   <option value="high">High</option>
                 </select>
+                <input
+                  type="date"
+                  className="border p-1 rounded"
+                  value={editDueDate}
+                  onChange={(e) => setEditDueDate(e.target.value)}
+                />
                 <div className="flex gap-2">
                   <button
                     onClick={() => saveEdit(task.id)}
@@ -230,6 +261,12 @@ function App() {
                   <div className="text-xs mt-1 font-bold text-gray-500 uppercase">
                     {task.priority} •{" "}
                     {task.isCompleted ? "✅ Done" : "⏳ Pending"}
+                    {/* 👇 Display Date if it exists */}
+                    {task.dueDate && (
+                      <span className="flex items-center gap-1 text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
+                        📅 {task.dueDate}
+                      </span>
+                    )}
                   </div>
                 </div>
 

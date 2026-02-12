@@ -9,6 +9,7 @@ pub struct Task {
     pub title: String,
     pub is_completed: bool,
     pub priority: String,
+    pub due_date: Option<String>,
     pub created_at: i64,
 }
 
@@ -17,6 +18,7 @@ pub struct Task {
 pub struct CreateTask {
     pub title: String,
     pub priority: String,
+    pub due_date: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -24,4 +26,5 @@ pub struct CreateTask {
 pub struct UpdateTask {
     pub title: String,
     pub priority: String,
+    pub due_date: Option<String>,
 }
