@@ -11,6 +11,10 @@ A high-performance, containerized Task Management application built to demonstra
 
 ## 🚀 Key Features
 
+Here is a demo of the application running on both Desktop and Mobile (via Cloudflare Tunnel):
+
+https://github.com/user-attachments/assets/65f39c72-8c28-477a-8f8d-59b47b24ed29
+
 * **⚡ High Performance Backend:** Built with Rust and Axum for near-instant response times.
 * **⚛️ Modern Frontend:** React with TypeScript and Vite for a type-safe, fast user experience.
 * **🐳 Fully Containerized:** Runs anywhere (Linux, Mac, Windows) with a single command via Docker Compose.
@@ -165,3 +169,6 @@ This project is open source and available under the [MIT License](https://www.go
 ```
 
 ```
+
+
+
