@@ -106,18 +106,23 @@ docker system prune
 
 ```bash
 .
-├── docker-compose.yml      # The orchestration config (Services, Networks, Volumes)
-├── task-manager/           # Frontend (React)
-│   ├── Dockerfile          # Multi-stage build (Node Build -> Nginx Serve)
-│   ├── nginx.conf          # Reverse proxy configuration
-│   ├── src/                # React Source Code
-│   └── package.json
-└── task-server/            # Backend (Rust)
-    ├── Dockerfile          # Rust build steps (Builder -> Runtime)
-    ├── src/                # Rust Source Code (main.rs, handlers, models)
-    ├── Cargo.toml
-    └── tasks.db            # Persistent database file (mapped via volume)
-
+├── docker-compose.yml       # The orchestration config (Services, Networks, Volumes)
+├── README.md                # Main project documentation
+├── task-manager/            # Frontend Directory (React + TypeScript + Vite)
+│   ├── Dockerfile           # Multi-stage build (Node Build -> Nginx Serve)
+│   ├── nginx.conf           # Nginx reverse proxy configuration
+│   ├── index.html           # HTML entry point
+│   ├── package.json         # NPM dependencies and scripts
+│   ├── vite.config.ts       # Vite build configuration
+│   ├── tailwind.config.js   # Tailwind CSS configuration
+│   ├── public/              # Static public assets
+│   └── src/                 # React source code
+└── task-server/             # Backend Directory (Rust + Axum)
+    ├── Dockerfile           # Rust build steps (Builder -> Runtime image)
+    ├── Cargo.toml           # Rust package dependencies
+    ├── Cargo.lock           # Exact dependency tree lock file
+    ├── tasks.db             # SQLite database file (linked to container via volume)
+    └── src/                 # Rust source code (main function, routes, database logic)
 ```
 
 ---
