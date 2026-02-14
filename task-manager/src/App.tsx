@@ -18,7 +18,7 @@ function App() {
   const [editDueDate, setEditDueDate] = useState("");
   // Save to Local Storage whenever 'tasks' changes
   useEffect(() => {
-    fetch("http://localhost:3000/tasks")
+    fetch("/tasks")
       .then((res) => res.json())
       .then((data) => setTasks(data))
       .catch((err) => console.error("Error fetching tasks:", err));
@@ -45,7 +45,7 @@ function App() {
   // --- NEW: Function to delete a task ---
   // we tell the server "Delete ID #5", wait for confirmation, then update the screen.
   const deleteTask = (id: number) => {
-    fetch(`http://localhost:3000/tasks/${id}`, {
+    fetch(`/tasks/${id}`, {
       method: "DELETE",
     })
       .then(() => {
@@ -65,7 +65,7 @@ function App() {
       dueDate: dueDate || null,
     }; // We will fix priority later
 
-    fetch("http://localhost:3000/tasks", {
+    fetch("/tasks", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(newTask),
@@ -83,7 +83,7 @@ function App() {
 
   // Toggle Completion - We tell the server "Flip ID #5", then update the screen.
   const toggleTask = (id: number) => {
-    fetch(`http://localhost:3000/tasks/${id}`, {
+    fetch(`/tasks/${id}`, {
       method: "PATCH", // Matches our Rust .patch() route
     })
       .then(() => {
@@ -120,7 +120,7 @@ function App() {
 
   // Save Changes (Talk to Backend)
   const saveEdit = (id: number) => {
-    fetch(`http://localhost:3000/tasks/${id}`, {
+    fetch(`/tasks/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

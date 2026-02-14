@@ -5,6 +5,8 @@ services:
     ports:
       - "3000:3000" # Open port 3000
     restart: always # On crashing restart automatically
+    volumes:
+      - ./task-server/tasks.db:/tasks.db # real file : fake file
 
   # Service 2: The React Frontend
   frontend:
