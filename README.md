@@ -68,6 +68,3 @@ This codebase enforces strict production standards to keep development predictab
  * **Strict Monorepo Separation:** The /frontend and /backend directories share zero dependencies or configuration bleed, enabling rapid hot-swapping of either layer.
  * **Explicit Error Handling:** Avoids panic states. All edge cases, database connection failures, and invalid payloads map elegantly to semantic HTTP Status Codes (400 Bad Request, 422 Unprocessable Entity, 500 Internal Server Error).
  * **Modular Component Architecture:** Frontend components follow a strict single-responsibility design pattern, extracting stateful logic into clean, reusable hooks or utility layers.
-### 💡 Why this works on your profile
-When an agency lead or a technical founder opens your GitHub, this is exactly what they want to see. It immediately shows them you aren't copy-pasting code from a basic tutorial—you understand how software components link together, deploy, and scale.
-Copy this text, tweak the folders or tech stack words to match exactly what you've put under the hood, and drop it into your repository's README.md.
